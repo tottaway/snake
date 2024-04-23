@@ -1,4 +1,6 @@
+use snake::model::grid_world::{Direction, GridPoint, GridWorldEntity};
 use std::collections::VecDeque;
+use std::iter;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -16,40 +18,14 @@ fn main() {
     .run();
 }
 
-#[derive(Debug, Copy, Clone)]
-enum Direction {
-  Up,
-  Down,
-  Left,
-  Right,
+#[derive(Debug)]
+struct Apple {
+  position: GridPoint,
 }
 
-#[derive(Debug, PartialEq)]
-struct GridPoint {
-  x: i32,
-  y: i32,
-}
-
-impl GridPoint {
-  pub fn move_in_dir(&self, dir: Direction) -> GridPoint {
-    match dir {
-      Direction::Up => GridPoint {
-        x: self.x,
-        y: self.y + 1,
-      },
-      Direction::Left => GridPoint {
-        x: self.x - 1,
-        y: self.y,
-      },
-      Direction::Right => GridPoint {
-        x: self.x + 1,
-        y: self.y,
-      },
-      Direction::Down => GridPoint {
-        x: self.x,
-        y: self.y - 1,
-      },
-    }
+impl GridWorldEntity for Apple {
+  fn get_grid_cells<'a>(&'a self) -> impl Iterator<Item = &'a GridPoint> {
+    iter::once(&self.position)
   }
 }
 
@@ -58,20 +34,13 @@ struct Snake {
   position: VecDeque<GridPoint>,
 }
 
-#[derive(Debug)]
-struct Apple {
-  position: GridPoint,
+impl GridWorldEntity for Snake {
+  fn get_grid_cells<'a>(&'a self) -> impl Iterator<Item = &'a GridPoint> {
+    self.position.iter()
+  }
 }
 
 impl Snake {
-  pub fn get_points(&self) -> Vec<(f32, f32)> {
-    self
-      .position
-      .iter()
-      .map(|point| (point.x as f32, point.y as f32))
-      .collect()
-  }
-
   pub fn update(&mut self, direction: Direction, hit_apple: bool) {
     let front = self.position.front().unwrap();
     self.position.push_front(front.move_in_dir(direction));

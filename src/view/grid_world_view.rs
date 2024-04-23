@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use nannou::color::rgb::Srgb;
 use nannou::prelude::*;
 
-use crate::model::grid_world::{GridWorld, GridWorldEntity};
+use crate::model::grid_world::GridWorld;
 
 fn get_points(grid_world: &impl GridWorld) -> Vec<(f32, f32, Srgb<u8>)> {
   grid_world
@@ -13,9 +13,9 @@ fn get_points(grid_world: &impl GridWorld) -> Vec<(f32, f32, Srgb<u8>)> {
         point.x as f32,
         point.y as f32,
         Srgb {
-          red: point.color.r,
-          green: point.color.g,
-          blue: point.color.b,
+          red:      point.color.r,
+          green:    point.color.g,
+          blue:     point.color.b,
           standard: PhantomData,
         },
       )

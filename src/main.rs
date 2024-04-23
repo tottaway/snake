@@ -1,4 +1,5 @@
-use snake::model::grid_world::{Direction, GridPoint, GridWorldEntity};
+use snake::model::grid_world::{Color, Direction, GridPoint, GridWorld, GridWorldEntity};
+use snake::view::grid_world_view::view;
 use std::collections::VecDeque;
 use std::iter;
 use std::thread::sleep;
@@ -55,6 +56,15 @@ struct Model {
   apple: Apple,
 }
 
+impl GridWorld for Model {
+  fn get_grid_cells<'a>(&'a self) -> impl Iterator<Item = &'a GridPoint> {
+    self
+      .snake
+      .get_grid_cells()
+      .chain(self.apple.get_grid_cells())
+  }
+}
+
 trait Policy {
   fn next_dir(&mut self, model: &Model) -> Direction;
 }
@@ -93,20 +103,51 @@ impl Policy for RandomPolicy {
 }
 
 fn model(_app: &App) -> Model {
+  let snake_color = Color { r: 255, g: 0, b: 0 };
+
+  let apple_color = Color { r: 0, g: 128, b: 0 };
   Model {
     snake: Snake {
       position: vec![
-        GridPoint { x: -4, y: 1 },
-        GridPoint { x: -3, y: 1 },
-        GridPoint { x: -2, y: 1 },
-        GridPoint { x: -1, y: 1 },
-        GridPoint { x: 0, y: 1 },
-        GridPoint { x: 1, y: 1 },
+        GridPoint {
+          x: -4,
+          y: 1,
+          color: snake_color,
+        },
+        GridPoint {
+          x: -3,
+          y: 1,
+          color: snake_color,
+        },
+        GridPoint {
+          x: -2,
+          y: 1,
+          color: snake_color,
+        },
+        GridPoint {
+          x: -1,
+          y: 1,
+          color: snake_color,
+        },
+        GridPoint {
+          x: 0,
+          y: 1,
+          color: snake_color,
+        },
+        GridPoint {
+          x: 1,
+          y: 1,
+          color: snake_color,
+        },
       ]
       .into(),
     },
     apple: Apple {
-      position: GridPoint { x: 10, y: 10 },
+      position: GridPoint {
+        x: 10,
+        y: 10,
+        color: apple_color,
+      },
     },
   }
 }
@@ -121,28 +162,4 @@ fn update(_app: &App, model: &mut Model, update: Update) {
     model.apple.position.x = rand::thread_rng().gen_range(-200..200);
     model.apple.position.y = rand::thread_rng().gen_range(-200..200);
   }
-}
-
-fn view(app: &App, model: &Model, frame: Frame) {
-  let draw = app.draw();
-
-  draw.background().color(LIGHTGRAY);
-  for point in model.snake.get_points() {
-    draw
-      .rect()
-      .color(RED)
-      .h(10f32)
-      .w(10f32)
-      .x(point.0 * 10f32)
-      .y(point.1 * 10f32);
-  }
-
-  draw
-    .rect()
-    .color(GREEN)
-    .h(10f32)
-    .w(10f32)
-    .x(model.apple.position.x as f32 * 10f32)
-    .y(model.apple.position.y as f32 * 10f32);
-  draw.to_frame(app, &frame).unwrap();
 }

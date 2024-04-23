@@ -1,5 +1,7 @@
 use std::collections::{HashSet, VecDeque};
 
+use nannou::color::rgb::Srgb;
+
 #[derive(Debug, Copy, Clone)]
 pub enum Direction {
   Up,
@@ -9,9 +11,17 @@ pub enum Direction {
 }
 
 #[derive(Debug, Eq, Hash, PartialEq, Copy, Clone)]
+pub struct Color {
+  pub r: u8,
+  pub g: u8,
+  pub b: u8,
+}
+
+#[derive(Debug, Eq, Hash, PartialEq, Copy, Clone)]
 pub struct GridPoint {
   pub x: i32,
   pub y: i32,
+  pub color: Color,
 }
 
 impl GridPoint {
@@ -20,18 +30,22 @@ impl GridPoint {
       Direction::Up => GridPoint {
         x: self.x,
         y: self.y + 1,
+        color: self.color,
       },
       Direction::Left => GridPoint {
         x: self.x - 1,
         y: self.y,
+        color: self.color,
       },
       Direction::Right => GridPoint {
         x: self.x + 1,
         y: self.y,
+        color: self.color,
       },
       Direction::Down => GridPoint {
         x: self.x,
         y: self.y - 1,
+        color: self.color,
       },
     }
   }
@@ -40,22 +54,16 @@ impl GridPoint {
 pub trait GridWorldEntity {
   fn get_grid_cells<'a>(&'a self) -> impl Iterator<Item = &'a GridPoint>;
 
-  fn get_points(&self) -> Vec<(f32, f32)> {
-    self
+  fn intersect(&self, other: &impl GridWorldEntity) -> VecDeque<GridPoint> {
+    let first_cells: HashSet<GridPoint> = self.get_grid_cells().map(|e| e.clone()).collect();
+    other
       .get_grid_cells()
-      .map(|point| (point.x as f32, point.y as f32))
+      .filter(|e| first_cells.contains(e))
+      .map(|e| e.clone())
       .collect()
   }
 }
 
-pub fn intersect(
-  first_entity: &impl GridWorldEntity,
-  second_entity: &impl GridWorldEntity,
-) -> VecDeque<GridPoint> {
-  let first_cells: HashSet<GridPoint> = first_entity.get_grid_cells().map(|e| e.clone()).collect();
-  second_entity
-    .get_grid_cells()
-    .filter(|e| first_cells.contains(e))
-    .map(|e| e.clone())
-    .collect()
+pub trait GridWorld {
+  fn get_grid_cells<'a>(&'a self) -> impl Iterator<Item = &'a GridPoint>;
 }

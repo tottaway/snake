@@ -1,14 +1,10 @@
 use std::collections::VecDeque;
 use std::iter;
-use std::thread::sleep;
-use std::time::Duration;
 
 use crate::model::grid_world::{Color, Direction, GridPoint, GridWorld, GridWorldEntity};
 use crate::policy::Policy;
-use crate::view::grid_world_view::view;
-use nannou::prelude::*;
-use rand::seq::IteratorRandom;
 use rand::Rng;
+
 #[derive(Debug)]
 pub struct Apple {
   position: GridPoint,
@@ -50,6 +46,7 @@ impl SnakeGameModel {
   pub fn update(&mut self, policy: &mut impl Policy<SnakeGameModel, Direction>) {
     let next_dir = policy.get_action(self);
     let hit_apple = !self.snake.intersect(&self.apple).is_empty();
+    dbg!(hit_apple);
     self.snake.update(next_dir, hit_apple);
     if hit_apple {
       self.apple.position.x = rand::thread_rng().gen_range(-200..200);
